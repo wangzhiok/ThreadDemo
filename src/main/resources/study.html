@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/mint-ui/lib/style.css">
+
+</head>
+<body>
+<div id="myApp">
+    <mt-header title="java面试">
+<!--        <mt-button icon="more" slot="right"></mt-button>-->
+    </mt-header>
+<!--    <mt-cell title="标题文字"></mt-cell>-->
+
+    <template v-if="!showAnswerVisible">
+        <mt-cell title="总题库" :value="questionBankList.length"></mt-cell>
+        <mt-cell title="已答题" :value="startIndex"></mt-cell>
+        <mt-cell title="知道" :value="doKnowNum"></mt-cell>
+        <mt-cell title="不知道" :value="doNotKnowNum"></mt-cell>
+        <mt-button type="primary" @click="start">开始答题</mt-button>
+    </template>
+    <template v-else>
+        <mt-cell title="答案" ></mt-cell>
+        <mt-cell :title="questionBankList[startIndex].question" :label="questionBankList[startIndex].answer" ></mt-cell>
+        <mt-button type="primary" @click="showAnswerVisible=false">关闭答案</mt-button>
+
+    </template>
+
+
+</div>
+</body>
+<!-- 引入组件库 -->
+<script src="https://cdn.jsdelivr.net/npm/vue@2.5.16/dist/vue.js"></script>
+<script src="https://unpkg.com/mint-ui/lib/index.js"></script>
+<script>
+        var vm = new Vue({
+                el: '#myApp',
+                data () {
+                    return {
+                        questionBankList:[
+                            {question:'spring的组件有哪些？',select:-1,type:1,answer:'有很多spring组件'},
+                            {question:'spring的常用注解有那些？',select:-1,type:1,answer:' @Component、@Repository：标注dao层的类、 @Service：对应的标注业务层的类'},
+                            {question:'springMvc的注解有哪些？',select:-1,type:2,answer:'@requestMapping @RestController'},
+                            {question:'springMvc的执行过程？',select:-1,type:2,answer:' 用户向服务器发送请求，请求被SpringMVC 前端控制器 DispatcherServlet捕获'},
+
+                        ],
+                        startIndex: 0,
+                        showAnswerVisible:false
+
+                    }
+                },
+                computed: {
+                    doKnowNum(){
+                        return this.questionBankList.filter(d=>d.select==1).length
+                    },
+                    doNotKnowNum(){
+                        return this.questionBankList.filter(d=>d.select==2).length
+                    }
+                },
+                watch: {},
+                created () {
+
+                },
+                methods: {
+                    async start() {
+                        let clone = JSON.stringify(this.questionBankList)
+                        while (this.startIndex<this.questionBankList.length){
+                            let d= this.questionBankList[this.startIndex]
+                            await this.$messagebox({title: '答题',message:d.question,confirmButtonText:'知道',showCancelButton: true,cancelButtonText:'不会或跳过'}).then(action => {
+                                if(action=='confirm'){
+                                    d.select =1;
+                                }else {
+                                    d.select = 2;
+                                    this.showAnswerVisible=true
+                                }
+                                this.startIndex ++
+                            })
+
+                        }
+
+                        await this.$messagebox.alert('答题完成')
+                        this.startIndex = 0
+                        this.questionBankList = JSON.parse(clone)
+
+                    }
+                },
+
+            })
+</script>
+</html>
